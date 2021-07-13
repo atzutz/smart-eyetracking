@@ -32,9 +32,9 @@ window.onload = function() {
         }
     };
     
-    /*document.getElementById("HSButton").addEventListener("click", function() {
+    document.getElementById("HSButton").addEventListener("click", function() {
             document.getElementById("heatmapContainerWrapper").hidden = false;
-    }, false);*/
+    }, false);
     
     heatmapContainer.onclick = function(e) {
     var x = e.layerX;
@@ -232,33 +232,25 @@ window.onload = function() {
 
     });
     
-    var wb = XLSX.utils.book_new();
-    wb.Props = {
-        Title: "Element Views",
-        Subject: "Details",
-        Author: "CS",
-        CreatedDate: new Date()
-    };
     
+    
+    /*document.getElementById("HSButton").addEventListener("click",function(){
+        var wb = XLSX.utils.book_new();
+        wb.Props = {
+            Title: "Element Views",
+            Subject: "Details",
+            Author: "CS",
+            CreatedDate: new Date()
+        };
 
-    function s2ab(s) { 
-        var buf = new ArrayBuffer(s.length); //convert s to arrayBuffer
-        var view = new Uint8Array(buf);  //create uint8array as viewer
-        for (var i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF; //convert to octet
-        return buf;    
-    }
-
-    document.getElementById("HSButton").addEventListener("click",function(){
         wb.SheetNames.push("Detailed View");        //give your sheet a name
-        console.log(tabela);
         var ws = XLSX.utils.aoa_to_sheet([Array.from(tabela.keys()),Array.from(tabela.values())]);   //create a sheet from your array of data
         wb.Sheets["Detailed View"] = ws;            //add your data to your sheet
         wb.SheetNames.push("Hash");                 //assign the sheet to the workbook array
 
-
         var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'});
         console.log("click");
         XLSX.writeFile(wb, "Details.xlsx");
-    });
+    });*/
 };
 
