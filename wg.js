@@ -1,8 +1,13 @@
 let count = 0;
 let avgX = 0;
 let avgY = 0;
-
+let tabela = new Map();
 window.onload = function() {
+    //create a hashmap of all the elements in the HTML DOM
+    var elements = document.getElementsByTagName("*");
+    for (var i = 0; i < elements.length; i++) {
+        tabela.set(elements[i].id,null);
+    }
     // create a heatmap instance
     var heatmap = h337.create({
     container: document.getElementById('heatmapContainer'),
@@ -15,6 +20,10 @@ window.onload = function() {
     var heatmapContainer = document.getElementById('heatmapContainerWrapper');
     heatmapContainer.hidden = true;
     function pinta(valX,valY) {
+        var elem = document.elementFromPoint(valX, valY);
+        if(tabela.get(elem.id)==null)   tabela.set(elem.id, 1);                     //a=0 => a=1
+        else                            tabela.set(elem.id, tabela.get(elem.id)+1); //a>1 => a++
+
         heatmap.addData({ x: valX, y: valY, value: 1 });
     };
     document.getElementById("HSButton").addEventListener("click", function() {
