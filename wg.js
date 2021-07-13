@@ -1,9 +1,66 @@
+let count = 0;
+let avgX = 0;
+let avgY = 0;
+
 window.onload = function() {
-			
+    // create a heatmap instance
+    var heatmap = h337.create({
+    container: document.getElementById('heatmapContainer'),
+    maxOpacity: .4,
+    radius: 50,
+    blur: .90,
+    // backgroundColor with alpha so you can see through it
+    backgroundColor: 'rgba(255, 255, 255, 0)'
+    });
+    var heatmapContainer = document.getElementById('heatmapContainerWrapper');
+    heatmapContainer.hidden = true;
+    function pinta(valX,valY) {
+        heatmap.addData({ x: valX, y: valY, value: 1 });
+    };
+    document.getElementById("HSButton").addEventListener("click", function() {
+            document.getElementById("heatmapContainerWrapper").hidden = false;
+    }, false);
+
+    heatmapContainer.onclick = function(e) {
+    var x = e.layerX;
+    var y = e.layerY;
+    heatmap.addData({ x: x, y: y, value: 1 });
+    };
+
+    pontos=5;
+    var arrayX = new Array(pontos);
+    var arrayY = new Array(pontos);
     webgazer.setRegression('ridge') /* currently must set regression and tracker */
     //.setTracker('clmtrackr')
     .setGazeListener(function(data, clock) {
-    console.log(data); /* data is an object containing an x and y key which are the x and y prediction coordinates (no bounds limiting) */
+        try{
+            //console.log(data.x);
+            //console.log(data.y);
+            arrayX[count]=Math.ceil(data.x);
+            arrayY[count]=Math.ceil(data.y);
+            count++;
+            if(count==pontos){
+                var totalX = 0;
+                var totalY = 0;
+                for(var i = 0; i < pontos; i++) {
+                    totalX += arrayX[i];
+                    totalY += arrayY[i];
+                }
+                var avgX = totalX / pontos;
+                var avgY = totalY / pontos;
+                console.log(avgX," | ",avgY)
+                arrayX= new Array(pontos)
+                arrayY= new Array(pontos)
+                count=0;
+                pinta(avgX,avgY)
+            }
+        }catch (error){
+            arrayX= new Array(pontos)
+            arrayY= new Array(pontos)
+            count=0;
+            console.error(error);
+        }
+    ; /* data is an object containing an x and y key which are the x and y prediction coordinates (no bounds limiting) */
     //   console.log(clock); /* elapsed time in milliseconds since webgazer.begin() was called */
     })
     .begin();
