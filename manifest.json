@@ -25,7 +25,7 @@
 
     "content_scripts": [{
         "matches" : ["<all_urls>"],
-        "js" : ["webgazer.js", "wg.js"],
+        "js" : ["webgazer.js", "wg.js", "heatmap.js", "xlsx.full.min.js"],
         "css" : ["style.css"]
     }],
   

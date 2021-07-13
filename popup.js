@@ -1,21 +1,46 @@
 window.onload = function () {
  
-    const button = document.getElementsByTagName('input');
+    var button = document.getElementById('button');
 
-    button[0].addEventListener('click', updateButton);
+    button.addEventListener('click', updateButton);
+
+    var checkbox = document.getElementById('sh');
+
+    checkbox.addEventListener('change', showHide);
 
     chrome.storage.sync.get("status", ({ status }) => {
-        button[0].value = status;
+        button.value = status;
     });
 
+    chrome.storage.sync.get("sh", ({ sh }) => {
+        checkbox.checked = sh;
+    });
+
+    function showHide() {
+        var sh = this.checked;
+        chrome.storage.sync.set({ sh });
+
+        chrome.tabs.query({
+            active: true,
+            currentWindow: true
+        }, function (tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, {
+                sh: this.checked,
+                type: "sh"
+            }, function () {
+            });
+        });
+
+    }
+
     function updateButton() {
-        if (button[0].value === 'Start') {
-            button[0].value = 'Stop';
+        if (button.value === 'Start') {
+            button.value = 'Stop';
         } else {
-            button[0].value = 'Start';
+            button.value = 'Start';
         }
 
-        var status = button[0].value;
+        var status = button.value;
         chrome.storage.sync.set({ status });
 
         // Send message to background saying whether it started or not
@@ -24,14 +49,14 @@ window.onload = function () {
             currentWindow: true
         }, function (tabs) {
             chrome.tabs.sendMessage(tabs[0].id, {
-                value: button[0].value
+                value: button.value,
+                type: "ss"
             }, function (response) {
                 if (response !== null) 
                     console.log(response.farewell);
             });
         });
 
-        window.close();
-        
+        window.close();   
     }
 }
