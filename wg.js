@@ -6,7 +6,7 @@ window.onload = function() {
     //create a hashmap of all the elements in the HTML DOM
     var elements = document.getElementsByTagName("*");
     for (var i = 0; i < elements.length; i++) {
-        tabela.set(elements[i].id,null);
+        tabela.set(elements[i].id,0);
     }
     // create a heatmap instance
     var heatmap = h337.create({
@@ -19,17 +19,23 @@ window.onload = function() {
     });
     var heatmapContainer = document.getElementById('heatmapContainerWrapper');
     heatmapContainer.hidden = true;
+    //generates de heatmap points and updates the values of the hashmap elements from the HTML DOM
     function pinta(valX,valY) {
-        var elem = document.elementFromPoint(valX, valY);
-        if(tabela.get(elem.id)==null)   tabela.set(elem.id, 1);                     //a=0 => a=1
-        else                            tabela.set(elem.id, tabela.get(elem.id)+1); //a>1 => a++
+        try{
+            var elem = document.elementFromPoint(valX, valY);
+            if(tabela.get(elem.id)==0)      tabela.set(elem.id, 1);                     //a=0 => a=1
+            else                            tabela.set(elem.id, tabela.get(elem.id)+1); //a>1 => a++
 
-        heatmap.addData({ x: valX, y: valY, value: 1 });
+            heatmap.addData({ x: valX, y: valY, value: 1 });
+        }catch(error){
+            debug.error(error);
+        }
     };
-    document.getElementById("HSButton").addEventListener("click", function() {
+    
+    /*document.getElementById("HSButton").addEventListener("click", function() {
             document.getElementById("heatmapContainerWrapper").hidden = false;
-    }, false);
-
+    }, false);*/
+    
     heatmapContainer.onclick = function(e) {
     var x = e.layerX;
     var y = e.layerY;
@@ -225,4 +231,34 @@ window.onload = function() {
         }
 
     });
+    
+    var wb = XLSX.utils.book_new();
+    wb.Props = {
+        Title: "Element Views",
+        Subject: "Details",
+        Author: "CS",
+        CreatedDate: new Date()
+    };
+    
+
+    function s2ab(s) { 
+        var buf = new ArrayBuffer(s.length); //convert s to arrayBuffer
+        var view = new Uint8Array(buf);  //create uint8array as viewer
+        for (var i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF; //convert to octet
+        return buf;    
+    }
+
+    document.getElementById("HSButton").addEventListener("click",function(){
+        wb.SheetNames.push("Detailed View");        //give your sheet a name
+        console.log(tabela);
+        var ws = XLSX.utils.aoa_to_sheet([Array.from(tabela.keys()),Array.from(tabela.values())]);   //create a sheet from your array of data
+        wb.Sheets["Detailed View"] = ws;            //add your data to your sheet
+        wb.SheetNames.push("Hash");                 //assign the sheet to the workbook array
+
+
+        var wbout = XLSX.write(wb, {bookType:'xlsx',  type: 'binary'});
+        console.log("click");
+        XLSX.writeFile(wb, "Details.xlsx");
+    });
 };
+
