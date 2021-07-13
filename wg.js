@@ -40,13 +40,18 @@ window.onload = function() {
         webgazer.end();
     };
 
-    var canvas = document.getElementById('myCanvas');
+    var canvas = document.createElement('canvas');
+    canvas.id = "myCanvas";
+    var body = document.getElementsByTagName("body");
+    body[0].appendChild(canvas); 
+    canvas = document.getElementById("myCanvas");
     var context = canvas.getContext('2d');
     var circles = [];
     context.canvas.width=window.innerWidth;
     context.canvas.height=window.innerHeight;
     var w = window.innerWidth;
     var h = window.innerHeight;
+    
 
     var draw = function (context, x, y, fillcolor, radius, linewidth, strokestyle) {
         context.beginPath();
