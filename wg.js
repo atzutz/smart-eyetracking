@@ -1,167 +1,192 @@
-window.onload = function() {
-			
-    webgazer.setRegression('ridge') /* currently must set regression and tracker */
-    //.setTracker('clmtrackr')
-    .setGazeListener(function(data, clock) {
-    console.log(data); /* data is an object containing an x and y key which are the x and y prediction coordinates (no bounds limiting) */
-    //   console.log(clock); /* elapsed time in milliseconds since webgazer.begin() was called */
-    })
-    .begin();
+window.onload = function () {
 
-    var width = 320;
-    var height = 240;
-    var topDist = '0px';
-    var leftDist = '0px';
-    
-    var setup = function() {
-        var video = document.getElementById('webgazerVideoFeed');
-        video.style.display = 'hidden';
-        video.style.position = 'absolute';
-        video.style.top = topDist;
-        video.style.left = leftDist;
-        video.width = width;
-        video.height = height;
-        video.style.margin = '0px';
+    chrome.runtime.onMessage.addListener(
+        function (request, sender, sendResponse) {
+            console.log(sender.tab ?
+                "from a content script:" + sender.tab.url :
+                "from the extension");
+            sendResponse({
+                status: request.value
+            });
+            if (request.value === "Stop") {
+                webgazer.setRegression('ridge') /* currently must set regression and tracker */
+                    //.setTracker('clmtrackr')
+                    .setGazeListener(function (data, clock) {
+                        console.log(data); /* data is an object containing an x and y key which are the x and y prediction coordinates (no bounds limiting) */
+                        //   console.log(clock); /* elapsed time in milliseconds since webgazer.begin() was called */
+                    })
+                    .begin();
 
-        webgazer.params.imgWidth = width;
-        webgazer.params.imgHeight = height;
-    };
+                var width = 320;
+                var height = 240;
+                var topDist = '0px';
+                var leftDist = '0px';
 
-    function checkIfReady() {
-        if (webgazer.isReady()) {
-            setup();
-        } else {
-            setTimeout(checkIfReady, 100);
-        }
-    }
-    setTimeout(checkIfReady,100);
+                var setup = function () {
+                    var video = document.getElementById('webgazerVideoFeed');
+                    video.style.display = 'hidden';
+                    video.style.position = 'absolute';
+                    video.style.top = topDist;
+                    video.style.left = leftDist;
+                    video.width = width;
+                    video.height = height;
+                    video.style.margin = '0px';
 
-    window.onbeforeunload = function() {
-        webgazer.end();
-    };
+                    webgazer.params.imgWidth = width;
+                    webgazer.params.imgHeight = height;
+                };
 
-    var canvas = document.createElement('canvas');
-    canvas.id = "myCanvas";
-    var body = document.getElementsByTagName("body");
-    body[0].appendChild(canvas); 
-    canvas = document.getElementById("myCanvas");
-    var context = canvas.getContext('2d');
-    var circles = [];
-    context.canvas.width=window.innerWidth;
-    context.canvas.height=window.innerHeight;
-    var w = window.innerWidth;
-    var h = window.innerHeight;
-    
+                function checkIfReady() {
+                    if (webgazer.isReady()) {
+                        setup();
+                    } else {
+                        setTimeout(checkIfReady, 100);
+                    }
+                }
+                setTimeout(checkIfReady, 100);
 
-    var draw = function (context, x, y, fillcolor, radius, linewidth, strokestyle) {
-        context.beginPath();
-        context.arc(x, y, radius, 0, 2 * Math.PI, false);
-        context.fillStyle = fillcolor;
-        context.fill();
-        context.lineWidth = linewidth;
-        context.strokeStyle = strokestyle;
-        context.stroke();
-    };
+                window.onbeforeunload = function () {
+                    webgazer.end();
+                };
 
-    var stroking = function (strokestyle){
-        context.strokeStyle = strokestyle;
+                var canvas = document.createElement('canvas');
+                canvas.id = "myCanvas";
+                var body = document.getElementsByTagName("body");
+                body[0].appendChild(canvas);
+                canvas = document.getElementById("myCanvas");
+                var context = canvas.getContext('2d');
+                var circles = [];
+                context.canvas.width = window.innerWidth;
+                context.canvas.height = window.innerHeight;
+                var w = window.innerWidth;
+                var h = window.innerHeight;
 
-    };
 
-    var Circle = function(x, y, radius) {
-        this.left = x - radius;
-        this.top = y - radius;
-        this.right = x + radius;
-        this.bottom = y + radius;
-    };
+                var draw = function (context, x, y, fillcolor, radius, linewidth, strokestyle) {
+                    context.beginPath();
+                    context.arc(x, y, radius, 0, 2 * Math.PI, false);
+                    context.fillStyle = fillcolor;
+                    context.fill();
+                    context.lineWidth = linewidth;
+                    context.strokeStyle = strokestyle;
+                    context.stroke();
+                };
 
-    var drawCircle = function (context, x, y, fillcolor, radius, linewidth, strokestyle, circles) {
-        draw(context, x, y, fillcolor, radius, linewidth, strokestyle);
-        var circle = new Circle(x, y, radius);
-        circles.push(circle);
-    };
+                var stroking = function (strokestyle) {
+                    context.strokeStyle = strokestyle;
 
-    var calibrationPoints = [[40,40],[w/2,40],[w - 40,40],[40, h/2],[w/2, h/2],[w - 40, h/2],[40,h - 40],[w/2,h - 40],[w - 40, h - 40]
-    ];
+                };
 
-    var x = calibrationPoints[0][0];
-    var y = calibrationPoints[0][1];
+                var Circle = function (x, y, radius) {
+                    this.left = x - radius;
+                    this.top = y - radius;
+                    this.right = x + radius;
+                    this.bottom = y + radius;
+                };
 
-    drawCircle(context, x, y, "black", 17, 2, "black", circles);
-    drawCircle(context, x, y, "black", 10, 2, "black", circles);
-    drawCircle(context, x, y, "yellow", 3, 2, "black", circles);
+                var drawCircle = function (context, x, y, fillcolor, radius, linewidth, strokestyle, circles) {
+                    draw(context, x, y, fillcolor, radius, linewidth, strokestyle);
+                    var circle = new Circle(x, y, radius);
+                    circles.push(circle);
+                };
 
-    var j = 1;
-    var k = 0;
-    document.getElementById('myCanvas').addEventListener("click", function (e) {
-        var clickedX = e.pageX - this.offsetLeft;
-        var clickedY = e.pageY - this.offsetTop;
+                var calibrationPoints = [
+                    [40, 40],
+                    [w / 2, 40],
+                    [w - 40, 40],
+                    [40, h / 2],
+                    [w / 2, h / 2],
+                    [w - 40, h / 2],
+                    [40, h - 40],
+                    [w / 2, h - 40],
+                    [w - 40, h - 40]
+                ];
 
-        if (clickedX < circles[2].right && clickedX > circles[2].left && clickedY > circles[2].top && clickedY < circles[2].bottom) {
-            if (j < calibrationPoints.length){
-                var x = calibrationPoints[j][0];
-                var y = calibrationPoints[j][1];
-                context.clearRect(0,0,canvas.width,canvas.height);
-                circles.pop();
-                circles.pop();
-                circles.pop();
+                var x = calibrationPoints[0][0];
+                var y = calibrationPoints[0][1];
+
                 drawCircle(context, x, y, "black", 17, 2, "black", circles);
                 drawCircle(context, x, y, "black", 10, 2, "black", circles);
                 drawCircle(context, x, y, "yellow", 3, 2, "black", circles);
-                j++;
-                k++;
+
+                var j = 1;
+                var k = 0;
+                document.getElementById('myCanvas').addEventListener("click", function (e) {
+                    var clickedX = e.pageX - this.offsetLeft;
+                    var clickedY = e.pageY - this.offsetTop;
+
+                    if (clickedX < circles[2].right && clickedX > circles[2].left && clickedY > circles[2].top && clickedY < circles[2].bottom) {
+                        if (j < calibrationPoints.length) {
+                            var x = calibrationPoints[j][0];
+                            var y = calibrationPoints[j][1];
+                            context.clearRect(0, 0, canvas.width, canvas.height);
+                            circles.pop();
+                            circles.pop();
+                            circles.pop();
+                            drawCircle(context, x, y, "black", 17, 2, "black", circles);
+                            drawCircle(context, x, y, "black", 10, 2, "black", circles);
+                            drawCircle(context, x, y, "yellow", 3, 2, "black", circles);
+                            j++;
+                            k++;
+                        } else {
+                            context.clearRect(0, 0, canvas.width, canvas.height);
+                            context.canvas.width = 0;
+                            context.canvas.height = 0;
+
+                            //webgazer.showPredictionPoints(true);
+                        }
+                    }
+                });
+
+                function goToPage(page) {
+                    location.href = page + ".htm";
+                }
+
+                document.getElementById('myCanvas').addEventListener("mousemove", function (e) {
+                    var clickedX = e.pageX - this.offsetLeft;
+                    var clickedY = e.pageY - this.offsetTop;
+                    var style1 = "black";
+                    var style2 = "black";
+                    var style3 = "black";
+
+                    if (k < calibrationPoints.length) {
+
+                        if (clickedX < circles[0].right && clickedX > circles[0].left && clickedY > circles[0].top && clickedY < circles[0].bottom) {
+                            style1 = "red";
+                        } else {
+                            style1 = "black"
+                        }
+                        if (clickedX < circles[1].right && clickedX > circles[1].left && clickedY > circles[1].top && clickedY < circles[1].bottom) {
+                            style2 = "orange"
+                        } else {
+                            style2 = "black"
+                        }
+                        if (clickedX < circles[2].right && clickedX > circles[2].left && clickedY > circles[2].top && clickedY < circles[2].bottom) {
+                            style3 = "green"
+                        } else {
+                            style3 = "black"
+                        }
+                        var x = calibrationPoints[k][0];
+                        var y = calibrationPoints[k][1];
+                        context.clearRect(0, 0, canvas.width, canvas.height);
+                        circles.pop();
+                        circles.pop();
+                        circles.pop();
+                        drawCircle(context, x, y, "black", 17, 2, style1, circles);
+                        drawCircle(context, x, y, "black", 10, 2, style2, circles);
+                        drawCircle(context, x, y, "yellow", 3, 2, style3, circles);
+                    }
+
+                });
+            } else {
+                location.reload();
             }
-            else{
-                context.clearRect(0,0,canvas.width,canvas.height);
-                context.canvas.width = 0;
-                context.canvas.height =0;
-                
-                //webgazer.showPredictionPoints(true);
-            }
+
+            status = request.value;
         }
-    });
+    );
 
-    function goToPage(page) {
-        location.href = page+".htm";
-    }
-
-    document.getElementById('myCanvas').addEventListener("mousemove", function (e) {
-        var clickedX = e.pageX - this.offsetLeft;
-        var clickedY = e.pageY - this.offsetTop;
-           var style1 = "black";
-           var style2 = "black";
-           var style3 = "black";
-
-           if (k < calibrationPoints.length){
-
-            if (clickedX < circles[0].right && clickedX > circles[0].left && clickedY > circles[0].top && clickedY < circles[0].bottom) {
-                style1 = "red";
-            }
-            else{
-                style1 = "black"
-            }
-            if (clickedX < circles[1].right && clickedX > circles[1].left && clickedY > circles[1].top && clickedY < circles[1].bottom) {
-                style2 = "orange"
-            }
-            else{
-                style2 = "black"
-            }
-            if (clickedX < circles[2].right && clickedX > circles[2].left && clickedY > circles[2].top && clickedY < circles[2].bottom) {
-                style3 = "green"
-            }
-            else{
-                style3 = "black"
-            }
-            var x = calibrationPoints[k][0];
-            var y = calibrationPoints[k][1];
-            context.clearRect(0,0,canvas.width,canvas.height);
-            circles.pop();
-            circles.pop();
-            circles.pop();
-            drawCircle(context, x, y, "black", 17, 2, style1, circles);
-            drawCircle(context, x, y, "black", 10, 2, style2, circles);
-            drawCircle(context, x, y, "yellow", 3, 2, style3, circles);
-        }
-
-    });
 };
+
+// Clicar start - fechar popup automaticamente
+// Guardar estado (start/stop)
