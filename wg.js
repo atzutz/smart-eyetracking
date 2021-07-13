@@ -1,5 +1,8 @@
 window.onload = function () {
 
+    var status = "Start";
+    chrome.storage.sync.set({ status });
+
     chrome.runtime.onMessage.addListener(
         function (request, sender, sendResponse) {
             console.log(sender.tab ?
@@ -187,6 +190,3 @@ window.onload = function () {
     );
 
 };
-
-// Clicar start - fechar popup automaticamente
-// Guardar estado (start/stop)
