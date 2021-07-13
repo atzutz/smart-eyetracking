@@ -1,0 +1,11 @@
+#webgazerVideoContainer {
+    z-index: 130;
+}
+
+#myCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: transparent;
+    z-index: 1000;
+}
