@@ -301,9 +301,48 @@ window.onload = function () {
                     console.log("click");
                     await XLSX.writeFile(wb, "Details.xlsx");
 
+                    document.getElementById("myHeatmap").style.position = "relative";
+
+                    const screenshotTarget = document.documentElement;
+                    setTimeout(() => {
+                    html2canvas(screenshotTarget).then((canvas) => {
+                        const base64image = canvas.toDataURL("image/png");
+
+                        var img = new Image();
+
+                        function split_2() {
+
+                            var w2 = img.width,
+                                h2 = img.height / 2;
+
+                                canvas.width = w2;
+                                canvas.height = h2;
+
+                                canvas.getContext('2d').drawImage(this, 0, 0, w2, h2);
+                                var a = document.createElement("a");
+                                a.href = canvas.toDataURL();
+                                a.download = "page.png";
+                                a.click();
+
+                                canvas.getContext('2d').drawImage(this, -w2, 0, w2, h2);
+                                a = document.createElement("a");
+                                a.href = canvas.toDataURL();
+                                a.download = "heatmap.png";
+                                a.click();
+ 
+                        };
+
+                        img.onload = split_2;
+                        img.src = base64image;
+                    });
+                }, 2000);
+
+
                     // sleep
-                    setTimeout(() => { location.reload(); }, 2000);
-                    
+                    setTimeout(() => {
+                        //location.reload();
+                    }, 4000);
+
                 }
 
                 status = request.value;
