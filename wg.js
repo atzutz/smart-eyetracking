@@ -281,6 +281,8 @@ window.onload = function () {
                     });
                 } else {
 
+                    webgazer.pause();
+
                     var wb = XLSX.utils.book_new();
                     wb.Props = {
                         Title: "Element Views",
@@ -301,48 +303,29 @@ window.onload = function () {
                     console.log("click");
                     await XLSX.writeFile(wb, "Details.xlsx");
 
-                    document.getElementById("myHeatmap").style.position = "relative";
+                    document.getElementById("myHeatmap").style.position = "absolute";
+                    document.getElementById("myHeatmap").style.top = 0;
+                    document.getElementById("myHeatmap").style.left = 0;
+                    document.getElementById("myHeatmap").style.zIndex = 2500;
 
-                    const screenshotTarget = document.documentElement;
+                    document.getElementById("myHeatmap").style.display = 'block';
+
                     setTimeout(() => {
-                    html2canvas(screenshotTarget).then((canvas) => {
-                        const base64image = canvas.toDataURL("image/png");
-
-                        var img = new Image();
-
-                        function split_2() {
-
-                            var w2 = img.width,
-                                h2 = img.height / 2;
-
-                                canvas.width = w2;
-                                canvas.height = h2;
-
-                                canvas.getContext('2d').drawImage(this, 0, 0, w2, h2);
+                        const screenshotTarget = document.documentElement;
+                        html2canvas(screenshotTarget).then((canvas) => {
+                                const base64image = canvas.toDataURL("image/png");
                                 var a = document.createElement("a");
-                                a.href = canvas.toDataURL();
-                                a.download = "page.png";
-                                a.click();
-
-                                canvas.getContext('2d').drawImage(this, -w2, 0, w2, h2);
-                                a = document.createElement("a");
-                                a.href = canvas.toDataURL();
+                                a.href = base64image;
                                 a.download = "heatmap.png";
                                 a.click();
- 
-                        };
-
-                        img.onload = split_2;
-                        img.src = base64image;
-                    });
-                }, 2000);
-
+                        });
+                    }, 2000);
 
                     // sleep
-                    setTimeout(() => {
-                        //location.reload();
+                    setTimeout(() => { 
+                        location.reload(); 
                     }, 4000);
-
+                    
                 }
 
                 status = request.value;
