@@ -17,22 +17,6 @@ window.onload = function () {
         tabela.set(elements[i].id, 0);
     }
 
-    var heatmap = document.createElement('div');
-    heatmap.id = "myHeatmap";
-    var body = document.getElementsByTagName("body");
-    body[0].appendChild(heatmap);
-    var heatmapContainer = document.getElementById("myHeatmap");
-
-    // create a heatmap instance
-    var heatmap = h337.create({
-        container: heatmapContainer,
-        maxOpacity: .4,
-        radius: 50,
-        blur: .90,
-        // backgroundColor with alpha so you can see through it
-        backgroundColor: 'rgba(255, 255, 255, 0)'
-    });
-
     //generates de heatmap points and updates the values of the hashmap elements from the HTML DOM
     function pinta(valX, valY) {
         try {
@@ -50,14 +34,31 @@ window.onload = function () {
         }
     };
 
+    var heatmap = document.createElement('div');
+    heatmap.id = "myHeatmap";
+    var body = document.getElementsByTagName("body");
+    body[0].appendChild(heatmap);
+    var heatmapContainer = document.getElementById("myHeatmap");
+
+    // create a heatmap instance
+    heatmap = h337.create({
+        container: heatmapContainer,
+        maxOpacity: .4,
+        radius: 50,
+        blur: .90,
+        backgroundColor: 'rgba(255, 255, 255, 0)'
+    });
+
     heatmapContainer.onclick = function (e) {
-        var x = e.layerX;
-        var y = e.layerY;
-        heatmap.addData({
-            x: x,
-            y: y,
-            value: 1
-        });
+        if (calibrated) {
+            var x = e.layerX;
+            var y = e.layerY;
+            heatmap.addData({
+                x: x,
+                y: y,
+                value: 1
+            });
+        }
     };
 
     pontos = 5;
@@ -80,6 +81,7 @@ window.onload = function () {
                 console.log(document.getElementById("myHeatmap").style.display);
             } else {
                 if (request.value === "Stop") {
+
                     document.getElementById("myHeatmap").style.display = 'none';
 
                     webgazer.setRegression('ridge') /* currently must set regression and tracker */
@@ -233,6 +235,7 @@ window.onload = function () {
 
                                 // end of calibration
                                 calibrated = true;
+                                heatmap.style.display = "block";
 
                                 //webgazer.showPredictionPoints(true);
                             }
@@ -336,5 +339,6 @@ window.onload = function () {
     );
 
     heatmapContainer.style.position = "absolute";
+    heatmapContainer.style.pointerEvents = "none";
 
 };
