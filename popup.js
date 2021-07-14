@@ -12,20 +12,15 @@ window.onload = function () {
         button.value = status;
     });
 
-    chrome.storage.sync.get("sh", ({ sh }) => {
-        checkbox.checked = sh;
-    });
-
     function showHide() {
-        var sh = this.checked;
-        chrome.storage.sync.set({ sh });
+        var showhide = this.checked;
 
         chrome.tabs.query({
             active: true,
             currentWindow: true
         }, function (tabs) {
             chrome.tabs.sendMessage(tabs[0].id, {
-                sh: this.checked,
+                sh: showhide,
                 type: "sh"
             }, function () {
             });

@@ -2,17 +2,13 @@ let count = 0;
 let avgX = 0;
 let avgY = 0;
 let tabela = new Map();
+let calibrated = false;
 
 window.onload = function () {
 
     var status = "Start";
     chrome.storage.sync.set({
         status
-    });
-
-    var sh = false;
-    chrome.storage.sync.set({
-        sh
     });
 
     //create a hashmap of all the elements in the HTML DOM
@@ -25,20 +21,17 @@ window.onload = function () {
     heatmap.id = "myHeatmap";
     var body = document.getElementsByTagName("body");
     body[0].appendChild(heatmap);
-    canvas = document.getElementById("myHeatmap");
+    var heatmapContainer = document.getElementById("myHeatmap");
 
     // create a heatmap instance
     var heatmap = h337.create({
-        container: document.getElementById("myHeatmap"),
+        container: heatmapContainer,
         maxOpacity: .4,
         radius: 50,
         blur: .90,
         // backgroundColor with alpha so you can see through it
         backgroundColor: 'rgba(255, 255, 255, 0)'
     });
-
-    var heatmapContainer = document.getElementById("myHeatmap");
-
 
     //generates de heatmap points and updates the values of the hashmap elements from the HTML DOM
     function pinta(valX, valY) {
@@ -53,7 +46,7 @@ window.onload = function () {
                 value: 1
             });
         } catch (error) {
-            debug.error(error);
+            //debug.error(error);
         }
     };
 
@@ -73,17 +66,22 @@ window.onload = function () {
 
 
     chrome.runtime.onMessage.addListener(
-        function (request, sender, sendResponse) {
+        async function (request, sender, sendResponse) {
             console.log(sender.tab ?
                 "from a content script:" + sender.tab.url :
                 "from the extension");
 
-
             if (request.type === "sh") {
-                heatmapContainer.hidden = request.sh;
-
+                if (request.sh) {
+                    document.getElementById("myHeatmap").style.display = 'block';
+                } else {
+                    document.getElementById("myHeatmap").style.display = 'none';
+                }
+                console.log(document.getElementById("myHeatmap").style.display);
             } else {
                 if (request.value === "Stop") {
+                    document.getElementById("myHeatmap").style.display = 'none';
+
                     webgazer.setRegression('ridge') /* currently must set regression and tracker */
                         //.setTracker('clmtrackr')
                         .setGazeListener(function (data, clock) {
@@ -106,7 +104,7 @@ window.onload = function () {
                                     arrayX = new Array(pontos)
                                     arrayY = new Array(pontos)
                                     count = 0;
-                                    pinta(avgX, avgY)
+                                    if (calibrated) pinta(avgX, avgY);
                                 }
                             } catch (error) {
                                 arrayX = new Array(pontos)
@@ -233,6 +231,9 @@ window.onload = function () {
                                 context.canvas.width = 0;
                                 context.canvas.height = 0;
 
+                                // end of calibration
+                                calibrated = true;
+
                                 //webgazer.showPredictionPoints(true);
                             }
                         }
@@ -298,9 +299,11 @@ window.onload = function () {
                         type: 'binary'
                     });
                     console.log("click");
-                    XLSX.writeFile(wb, "Details.xlsx");
+                    await XLSX.writeFile(wb, "Details.xlsx");
 
-                    location.reload();
+                    // sleep
+                    setTimeout(() => { location.reload(); }, 2000);
+                    
                 }
 
                 status = request.value;
@@ -309,5 +312,7 @@ window.onload = function () {
 
         }
     );
+
+    heatmapContainer.style.position = "absolute";
 
 };
