@@ -1,0 +1,24 @@
+html, body {
+    width: 250px;
+    overflow: auto;
+    text-align: center;
+    top: 0;
+    left: 0;
+}
+
+#button {
+    height: 50px;
+    width: 100px;
+    outline: none;
+    margin: 10px;
+    border: none;
+    border-radius: 2px;
+    background-color: #b61b23;
+    font-weight: bolder;
+    color: white;
+}
+
+#button.current {
+    box-shadow: 0 0 0 2px white,
+        0 0 0 4px black;
+}
