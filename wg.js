@@ -1,10 +1,11 @@
 let count = 0;
 let avgX = 0;
 let avgY = 0;
-let tabela = new Map();
+let tabelaIDs = new Map();
+let tabelaClasses = new Map();
 let calibrated = false;
 
-window.onload =  function () {
+window.onload = function () {
 
     var status = "Start";
     chrome.storage.sync.set({
@@ -16,10 +17,13 @@ window.onload =  function () {
         sh
     });
 
-    //create a hashmap of all the elements in the HTML DOM
-    var elements = document.getElementsByTagName("*");
+    tabelaIDs.set("Id","Views");
+    tabelaClasses.set("Class","Views");
+
+    var elements = document.getElementsByTagName("*");    
     for (var i = 0; i < elements.length; i++) {
-        tabela.set(elements[i].id, 0);
+        tabelaIDs.set(elements[i].id, 0);
+        tabelaClasses.set(elements[i].className, 0);
     }
 
     //generates de heatmap points and updates the values of the hashmap elements from the HTML DOM
@@ -32,8 +36,8 @@ window.onload =  function () {
             });
 
             var elem = document.elementFromPoint(valX, valY);
-            if (tabela.get(elem.id) == 0) tabela.set(elem.id, 1); //a=0 => a=1
-            else tabela.set(elem.id, tabela.get(elem.id) + 1); //a>1 => a++
+            tabelaIDs.set(elem.id, tabelaIDs.get(elem.id) + 1); //a>1 => a++
+            tabelaClasses.set(elem.className, tabelaClasses.get(elem.className) + 1); //a>1 => a++
 
         } catch (error) {
             //debug.error(error);
@@ -44,13 +48,12 @@ window.onload =  function () {
     heatmap.id = "myHeatmap";
     var body = document.getElementsByTagName("body");
     body[0].appendChild(heatmap);
-    
+
     document.getElementById("myHeatmap").style.width = document.documentElement.scrollWidth + "px";
     document.getElementById("myHeatmap").style.height = document.documentElement.scrollHeight + "px";
-    
-    while ( document.getElementById("myHeatmap").style.height != document.documentElement.scrollHeight + 'px' ||
-            document.getElementById("myHeatmap").style.width != document.documentElement.scrollWidth + 'px') {
-    }
+
+    while (document.getElementById("myHeatmap").style.height != document.documentElement.scrollHeight + 'px' ||
+        document.getElementById("myHeatmap").style.width != document.documentElement.scrollWidth + 'px') {}
 
     var heatmapContainer = document.getElementById("myHeatmap");
 
@@ -61,8 +64,8 @@ window.onload =  function () {
         radius: 50,
         blur: .90,
         backgroundColor: 'rgba(255, 255, 255, 0)'
-    }); 
-    
+    });
+
     document.getElementById("myHeatmap").onclick = function (e) {
         if (calibrated) {
             var x = e.layerX;
@@ -92,6 +95,7 @@ window.onload =  function () {
                 } else {
                     document.getElementById("myHeatmap").style.display = 'none';
                 }
+                sh = request.sh;
             } else {
                 if (request.value === "Stop") {
 
@@ -315,10 +319,21 @@ window.onload =  function () {
                         CreatedDate: new Date()
                     };
 
+
+                    finalInput = [Array.from(tabelaIDs.keys()), Array.from(tabelaIDs.values()), [""], Array.from(tabelaClasses.keys()), Array.from(tabelaClasses.values())];
+                    var aoa = [];
+                    for (var i = 0; i < finalInput.length; ++i) {
+                        for (var j = 0; j < finalInput[i].length; ++j) {
+                            if (!aoa[j]) aoa[j] = [];
+                            aoa[j][i] = finalInput[i][j];
+                        }
+                    }
+
+
                     wb.SheetNames.push("Detailed View"); //give your sheet a name
-                    var ws = XLSX.utils.aoa_to_sheet([Array.from(tabela.keys()), Array.from(tabela.values())]); //create a sheet from your array of data
+                    var ws = XLSX.utils.aoa_to_sheet(aoa); //create a sheet from your array of data
                     wb.Sheets["Detailed View"] = ws; //add your data to your sheet
-                    wb.SheetNames.push("Hash"); //assign the sheet to the workbook array
+
 
                     var wbout = XLSX.write(wb, {
                         bookType: 'xlsx',
@@ -327,31 +342,29 @@ window.onload =  function () {
                     console.log("click");
                     await XLSX.writeFile(wb, "Details" + dia + mes + ano + "_" + horas + min + ".xlsx");
 
+                    window.scrollTo(0, 0);
+                    
                     document.getElementById("myHeatmap").style.position = "absolute";
                     document.getElementById("myHeatmap").style.top = 0;
                     document.getElementById("myHeatmap").style.left = 0;
                     document.getElementById("myHeatmap").style.zIndex = 2500;
-
                     document.getElementById("myHeatmap").style.display = 'block';
 
-                    window.scrollTo(0, 0);
-
-                    setTimeout(() => {
-                        const screenshotTarget = document.documentElement;
-                        html2canvas(screenshotTarget).then((canvas) => {
-                                const base64image = canvas.toDataURL("image/png");
-                                var a = document.createElement("a");
-                                a.href = base64image;
-                                a.download = "heatmap_" + dia + mes + ano + "_" + horas + min + ".png";
-                                a.click();
-                        });
-                    }, 2000);
-
-                    // sleep
-                    setTimeout(() => {
-                        location.reload(); 
-                    }, 4000);
+                    while (document.getElementById("myHeatmap").style.display != 'block') {}
                     
+                    const screenshotTarget = document.documentElement;
+                    html2canvas(screenshotTarget).then((canvas) => {
+                        const base64image = canvas.toDataURL("image/png");
+                        var a = document.createElement("a");
+                        a.href = base64image;
+                        a.download = "heatmap_" + dia + mes + ano + "_" + horas + min + ".png";
+                        a.click();
+                    });
+
+                    setTimeout(function(){ 
+                        location.reload(); 
+                    }, 5000);
+
                 }
 
                 status = request.value;

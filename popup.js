@@ -14,10 +14,14 @@ window.onload = function () {
 
     chrome.storage.sync.get("sh", ({ sh }) => {
         checkbox.checked = sh;
+        console.log(sh);
     });
 
     function showHide() {
         var showhide = this.checked;
+
+        var sh = this.checked;
+        chrome.storage.sync.set({ sh });
 
         chrome.tabs.query({
             active: true,
