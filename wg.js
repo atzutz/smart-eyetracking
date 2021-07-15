@@ -4,11 +4,16 @@ let avgY = 0;
 let tabela = new Map();
 let calibrated = false;
 
-window.onload = function () {
+window.onload =  function () {
 
     var status = "Start";
     chrome.storage.sync.set({
         status
+    });
+
+    var sh = false;
+    chrome.storage.sync.set({
+        sh
     });
 
     //create a hashmap of all the elements in the HTML DOM
@@ -20,15 +25,16 @@ window.onload = function () {
     //generates de heatmap points and updates the values of the hashmap elements from the HTML DOM
     function pinta(valX, valY) {
         try {
-            var elem = document.elementFromPoint(valX, valY);
-            if (tabela.get(elem.id) == 0) tabela.set(elem.id, 1); //a=0 => a=1
-            else tabela.set(elem.id, tabela.get(elem.id) + 1); //a>1 => a++
-
             heatmap.addData({
                 x: valX,
                 y: valY,
                 value: 1
             });
+
+            var elem = document.elementFromPoint(valX, valY);
+            if (tabela.get(elem.id) == 0) tabela.set(elem.id, 1); //a=0 => a=1
+            else tabela.set(elem.id, tabela.get(elem.id) + 1); //a>1 => a++
+
         } catch (error) {
             //debug.error(error);
         }
@@ -38,6 +44,14 @@ window.onload = function () {
     heatmap.id = "myHeatmap";
     var body = document.getElementsByTagName("body");
     body[0].appendChild(heatmap);
+    
+    document.getElementById("myHeatmap").style.width = document.documentElement.scrollWidth + "px";
+    document.getElementById("myHeatmap").style.height = document.documentElement.scrollHeight + "px";
+    
+    while ( document.getElementById("myHeatmap").style.height != document.documentElement.scrollHeight + 'px' ||
+            document.getElementById("myHeatmap").style.width != document.documentElement.scrollWidth + 'px') {
+    }
+
     var heatmapContainer = document.getElementById("myHeatmap");
 
     // create a heatmap instance
@@ -47,9 +61,9 @@ window.onload = function () {
         radius: 50,
         blur: .90,
         backgroundColor: 'rgba(255, 255, 255, 0)'
-    });
-
-    heatmapContainer.onclick = function (e) {
+    }); 
+    
+    document.getElementById("myHeatmap").onclick = function (e) {
         if (calibrated) {
             var x = e.layerX;
             var y = e.layerY;
@@ -78,7 +92,6 @@ window.onload = function () {
                 } else {
                     document.getElementById("myHeatmap").style.display = 'none';
                 }
-                console.log(document.getElementById("myHeatmap").style.display);
             } else {
                 if (request.value === "Stop") {
 
@@ -88,8 +101,6 @@ window.onload = function () {
                         //.setTracker('clmtrackr')
                         .setGazeListener(function (data, clock) {
                             try {
-                                //console.log(data.x);
-                                //console.log(data.y);
                                 arrayX[count] = Math.ceil(data.x);
                                 arrayY[count] = Math.ceil(data.y);
                                 count++;
@@ -102,7 +113,8 @@ window.onload = function () {
                                     }
                                     var avgX = totalX / pontos;
                                     var avgY = totalY / pontos;
-                                    console.log(avgX, " | ", avgY)
+                                    avgX += window.pageXOffset;
+                                    avgY += window.pageYOffset;
                                     arrayX = new Array(pontos)
                                     arrayY = new Array(pontos)
                                     count = 0;
@@ -116,6 +128,9 @@ window.onload = function () {
                             }; /* data is an object containing an x and y key which are the x and y prediction coordinates (no bounds limiting) */
                             //   console.log(clock); /* elapsed time in milliseconds since webgazer.begin() was called */
                         })
+                        .showFaceFeedbackBox(false)
+                        .showFaceOverlay(false)
+                        .showPredictionPoints(false)
                         .begin();
 
                     var width = 320;
@@ -125,7 +140,7 @@ window.onload = function () {
 
                     var setup = function () {
                         var video = document.getElementById('webgazerVideoFeed');
-                        video.style.display = 'hidden';
+                        video.style.display = 'none';
                         video.style.position = 'absolute';
                         video.style.top = topDist;
                         video.style.left = leftDist;
@@ -157,10 +172,10 @@ window.onload = function () {
                     canvas = document.getElementById("myCanvas");
                     var context = canvas.getContext('2d');
                     var circles = [];
-                    context.canvas.width = window.innerWidth;
-                    context.canvas.height = window.innerHeight;
-                    var w = window.innerWidth;
-                    var h = window.innerHeight;
+                    context.canvas.width = document.documentElement.scrollWidth;
+                    context.canvas.height = document.documentElement.scrollHeight;
+                    var w = document.documentElement.scrollWidth;
+                    var h = document.documentElement.scrollHeight;
 
                     var draw = function (context, x, y, fillcolor, radius, linewidth, strokestyle) {
                         context.beginPath();
@@ -235,7 +250,6 @@ window.onload = function () {
 
                                 // end of calibration
                                 calibrated = true;
-                                heatmap.style.display = "block";
 
                                 //webgazer.showPredictionPoints(true);
                             }
@@ -286,6 +300,13 @@ window.onload = function () {
 
                     webgazer.pause();
 
+                    var d = new Date();
+                    var dia = d.getDate();
+                    var mes = d.getMonth();
+                    var ano = d.getFullYear();
+                    var horas = d.getHours();
+                    var min = d.getMinutes();
+
                     var wb = XLSX.utils.book_new();
                     wb.Props = {
                         Title: "Element Views",
@@ -304,7 +325,7 @@ window.onload = function () {
                         type: 'binary'
                     });
                     console.log("click");
-                    await XLSX.writeFile(wb, "Details.xlsx");
+                    await XLSX.writeFile(wb, "Details" + dia + mes + ano + "_" + horas + min + ".xlsx");
 
                     document.getElementById("myHeatmap").style.position = "absolute";
                     document.getElementById("myHeatmap").style.top = 0;
@@ -313,19 +334,21 @@ window.onload = function () {
 
                     document.getElementById("myHeatmap").style.display = 'block';
 
+                    window.scrollTo(0, 0);
+
                     setTimeout(() => {
                         const screenshotTarget = document.documentElement;
                         html2canvas(screenshotTarget).then((canvas) => {
                                 const base64image = canvas.toDataURL("image/png");
                                 var a = document.createElement("a");
                                 a.href = base64image;
-                                a.download = "heatmap.png";
+                                a.download = "heatmap_" + dia + mes + ano + "_" + horas + min + ".png";
                                 a.click();
                         });
                     }, 2000);
 
                     // sleep
-                    setTimeout(() => { 
+                    setTimeout(() => {
                         location.reload(); 
                     }, 4000);
                     
@@ -338,7 +361,7 @@ window.onload = function () {
         }
     );
 
-    heatmapContainer.style.position = "absolute";
-    heatmapContainer.style.pointerEvents = "none";
+    document.getElementById("myHeatmap").style.position = "absolute";
+    document.getElementById("myHeatmap").style.pointerEvents = "none";
 
 };

@@ -12,6 +12,10 @@ window.onload = function () {
         button.value = status;
     });
 
+    chrome.storage.sync.get("sh", ({ sh }) => {
+        checkbox.checked = sh;
+    });
+
     function showHide() {
         var showhide = this.checked;
 
