@@ -16,7 +16,7 @@ This project was developed using **JavaScript, HTML, CSS** and the following lib
 To use and test this Chrome Extension, please follow the instructions bellow:
 
 1. Clone this repository.
-2. Open Google Chrome and access [Chrome Extensions](chrome://extensions).
+2. Open Google Chrome and access [Chrome Extensions](chrome://extensions "Chrome Extensions").
 3. Enable "Developer Mode" (top-right of the screen).
 4. Upload Extension (select the folder that contains this repository and make sure there's no sub-folder between the one uploaded and the files cloned).
 5. Activate it.
