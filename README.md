@@ -27,6 +27,6 @@ To use and test this Chrome Extension, please follow the instructions bellow:
 
 This project was developed under the **Innovation Week Experience of Critical Software** (12-16 July 2021) by:
 
-- **André Jesus** (andre02jesus@gmail.com)
-- **João Calhau** (ximaxerpt@gmail.com)
-- **João Pires** (joaocarlosmrp@gmail.com)
+- [**André Jesus**](https://github.com/AndreJesus2 "Github Profile")
+- [**João Calhau**](https://github.com/ximaxer "Github Profile") 
+- [**João Pires**](https://github.com/JoaoCarlosPires "Github Profile")
