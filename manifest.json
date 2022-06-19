@@ -1,33 +1,45 @@
 {
-    "manifest_version": 2,
-    "name": "Smart EyeTracking",
-    "version": "1.0",
-    "description": "Analytics powered by AI",
-
-    "browser_action": {
-        "default_popup": "popup.html",
-        "default_icon": {
-            "16": "/images/get_started16.png",
-            "32": "/images/get_started32.png",
-            "48": "/images/get_started48.png",
-            "128": "/images/get_started128.png"
-          }
-    },
-
-    "icons": {
-        "16": "/images/get_started16.png",
-        "32": "/images/get_started32.png",
-        "48": "/images/get_started48.png",
-        "128": "/images/get_started128.png"
-    },
-
-    "content_security_policy" : "script-src 'self' 'unsafe-eval'; object-src 'self'",
-
-    "content_scripts": [{
-        "matches" : ["<all_urls>"],
-        "js" : ["webgazer.js", "wg.js", "heatmap.js", "xlsx.full.min.js", "html2canvas.js"],
-        "css" : ["style.css"]
-    }],
-  
-    "permissions": ["storage"]
-  }
+  "manifest_version": 2,
+  "name": "Smart EyeTracking",
+  "version": "1.0",
+  "description": "Analytics powered by AI",
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "/images/get_started16.png",
+      "32": "/images/get_started32.png",
+      "48": "/images/get_started48.png",
+      "128": "/images/get_started128.png"
+    }
+  },
+  "icons": {
+    "16": "/images/get_started16.png",
+    "32": "/images/get_started32.png",
+    "48": "/images/get_started48.png",
+    "128": "/images/get_started128.png"
+  },
+  "web_accessible_resources": [
+    "/images/*"
+  ],
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "webgazer.js",
+        "wg.js",
+        "heatmap.js",
+        "xlsx.full.min.js",
+        "html2canvas.js"
+      ],
+      "css": [
+        "style.css"
+      ]
+    }
+  ],
+  "permissions": [
+    "storage"
+  ]
+}
